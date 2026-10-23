@@ -17,6 +17,11 @@ async function loadCatalog() {
       card.className = 'album-tile';
       const image = document.createElement('img');
       image.src = imageURL({id:album.cover},'w1000');
+      if(album.downloads!==true) {
+        image.addEventListener('contextmenu',event=>event.preventDefault());
+        image.addEventListener('dragstart',event=>event.preventDefault());
+        image.style.webkitTouchCallout='none';
+      }
       image.alt = ''; image.loading = 'lazy'; image.draggable = false; image.referrerPolicy = 'no-referrer';
       const info = document.createElement('div'); info.className='tile-info';
       const title = document.createElement('h2'); title.textContent=album.title;
@@ -106,6 +111,7 @@ function render() {
     img.loading = index < 6 ? 'eager' : 'lazy';
     img.decoding = 'async';
     img.draggable = false;
+    if(activeAlbum.downloads!==true)img.style.webkitTouchCallout='none';
     img.referrerPolicy = 'no-referrer';
     img.src = imageURL(photo, 'w800');
     const caption = document.createElement('span');
@@ -121,6 +127,7 @@ function openPhoto(index) {
   current = index;
   const photo=photos[current];
   $('image-error').hidden=true;
+  $('large-photo').style.webkitTouchCallout=activeAlbum.downloads===true ? 'default' : 'none';
   $('large-photo').alt=`${activeAlbum.title} — ${photo.name}`;
   $('large-photo').src=imageURL(photo,'w2400');
   $('photo-name').textContent=photo.name;
