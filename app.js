@@ -1,6 +1,6 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
-let photos = [], current = 0, opener = null, activeAlbum = null, pendingAlbum = null, albumOpener = null, requestVersion = 0;
+let photos = [], current = 0, opener = null, activeAlbum = null, pendingAlbum = null, albumOpener = null, requestVersion = 0, downloadsOnly = false;
 const imageURL = (photo, size) => `https://lh3.googleusercontent.com/d/${encodeURIComponent(photo.id)}=${size}`;
 const decode = (value) => Uint8Array.from(atob(value), c => c.charCodeAt(0));
 $('year').textContent = new Date().getFullYear();
@@ -43,7 +43,10 @@ function resetPassword() {
 async function chooseAlbum(album,card) {
   albumOpener=card;
   if(album.passwordRequired) {
-    pendingAlbum=album;resetPassword();
+    pendingAlbum=album;downloadsOnly=false;resetPassword();
+    $('access-label').textContent='ÁLBUM COM PALAVRA-PASSE';
+    $('password-info').textContent='Introduza a palavra-passe para abrir este álbum.';
+    $('unlock').textContent='Abrir álbum ↗';
     $('access-title').textContent=album.title;
     $('access').showModal();$('password').focus();
   } else {
@@ -61,10 +64,20 @@ function showAlbum(album,content) {
   $('download').hidden=album.downloads!==true;
   $('view-only').hidden=album.downloads===true;
   $('download-status').textContent='';
+  $('unlock-downloads').hidden=!album.downloadPasswordSource || album.downloads===true;
   $('entrance').hidden=true;$('album').hidden=false;$('lock').hidden=false;
   $('catalog-status').textContent='';
   window.scrollTo(0,0);$('lock').focus({preventScroll:true});
 }
+$('unlock-downloads').addEventListener('click',()=>{
+  if(!activeAlbum?.downloadPasswordSource || activeAlbum.downloads===true)return;
+  pendingAlbum=activeAlbum;downloadsOnly=true;resetPassword();
+  $('access-label').textContent='DESBLOQUEAR DOWNLOADS';
+  $('access-title').textContent=activeAlbum.title;
+  $('password-info').textContent='Introduza a palavra-passe para descarregar as fotografias.';
+  $('unlock').textContent='Desbloquear downloads ↓';
+  $('access').showModal();$('password').focus();
+});
 $('show-password').addEventListener('click', () => {
   const shown = $('password').type === 'password';
   $('password').type = shown ? 'text' : 'password';
@@ -76,14 +89,15 @@ $('close-access').addEventListener('click',()=>$('access').close());
 $('access').addEventListener('close',()=>{
   ++requestVersion;pendingAlbum=null;resetPassword();
   if(!activeAlbum)albumOpener?.focus();
+  else if(!$('unlock-downloads').hidden)$('unlock-downloads').focus();
 });
 $('unlock-form').addEventListener('submit', async event => {
   event.preventDefault();
-  const selected=pendingAlbum,version=++requestVersion;
+  const selected=pendingAlbum,unlockDownloads=downloadsOnly,version=++requestVersion;
   if(!selected)return;
   $('unlock').disabled=true;$('message').textContent='A abrir o álbum…';
   let bundle;
-  try {bundle=await readJSON(selected.source);}
+  try {bundle=await readJSON(unlockDownloads ? selected.downloadPasswordSource : selected.source);}
   catch {if(version===requestVersion){$('message').textContent='Não foi possível carregar o álbum. Verifique a ligação e tente novamente.';$('unlock').disabled=false;}return;}
   try {
     const material = await crypto.subtle.importKey('raw', new TextEncoder().encode($('password').value), 'PBKDF2', false, ['deriveKey']);
@@ -92,8 +106,16 @@ $('unlock-form').addEventListener('submit', async event => {
     const content=JSON.parse(new TextDecoder().decode(plain));
     if(version!==requestVersion)return;
     // Set the album before closing to keep focus inside the newly opened gallery.
-    activeAlbum=selected;
-    $('access').close();resetPassword();showAlbum(selected,content);
+    if(unlockDownloads) {
+      activeAlbum={...selected,downloads:true};
+      $('access').close();resetPassword();
+      $('download').hidden=false;$('view-only').hidden=true;$('unlock-downloads').hidden=true;
+      $('album-description').textContent='Downloads desbloqueados. Abra uma fotografia para a descarregar.';
+      $('lock').focus();
+    } else {
+      activeAlbum=selected;
+      $('access').close();resetPassword();showAlbum(selected,content);
+    }
   } catch {
     if(version===requestVersion){$('message').textContent='Palavra-passe incorreta. Tente novamente.';$('password').select();}
   } finally {if(version===requestVersion)$('unlock').disabled=false;}
@@ -175,7 +197,7 @@ $('lock').addEventListener('click', () => {
   if($('viewer').open)$('viewer').close();
   photos=[];activeAlbum=null;$('grid').replaceChildren();
   $('album').hidden=true;$('entrance').hidden=false;$('lock').hidden=true;
-  $('download').hidden=true;$('download-status').textContent='';
+  $('download').hidden=true;$('unlock-downloads').hidden=true;$('download-status').textContent='';
   window.scrollTo(0,0);albumOpener?.focus();
 });
 // Discourage casual saving only on view-only albums; this is not DRM.
