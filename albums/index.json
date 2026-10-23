@@ -21,5 +21,16 @@
     "passwordRequired": false,
     "downloads": false,
     "source": "albums/coimbra-2023.json"
+  },
+  {
+    "slug": "gondramaz",
+    "title": "Gondramaz",
+    "location": "Gondramaz",
+    "year": "2023",
+    "count": 7,
+    "cover": "1uTmsdDmaPh5IVylq9xrU3i6O_67uVO_G",
+    "passwordRequired": false,
+    "downloads": false,
+    "source": "albums/gondramaz.json"
   }
 ]
