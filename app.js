@@ -127,7 +127,7 @@ function render() {
   photos.forEach((photo,index) => {
     const button = document.createElement('button');
     button.className = 'photo';
-    button.setAttribute('aria-label', `Ampliar ${photo.name}`);
+    button.setAttribute('aria-label', `Ampliar fotografia ${index+1}`);
     const img = document.createElement('img');
     img.alt = `${activeAlbum.title} — fotografia ${index+1}`;
     img.loading = index < 6 ? 'eager' : 'lazy';
@@ -136,10 +136,8 @@ function render() {
     if(activeAlbum.downloads!==true)img.style.webkitTouchCallout='none';
     img.referrerPolicy = 'no-referrer';
     img.src = imageURL(photo, 'w800');
-    const caption = document.createElement('span');
-    caption.textContent = photo.name;
-    img.addEventListener('error', () => { caption.textContent = `${photo.name} · Clique para tentar ampliar`; });
-    button.append(img,caption);
+    img.addEventListener('error', () => { img.alt = 'Não foi possível carregar. Clique para tentar ampliar.'; });
+    button.append(img);
     button.addEventListener('click', () => {opener=button;openPhoto(index);});
     fragment.append(button);
   });
@@ -150,9 +148,8 @@ function openPhoto(index) {
   const photo=photos[current];
   $('image-error').hidden=true;
   $('large-photo').style.webkitTouchCallout=activeAlbum.downloads===true ? 'default' : 'none';
-  $('large-photo').alt=`${activeAlbum.title} — ${photo.name}`;
+  $('large-photo').alt=`${activeAlbum.title} — fotografia ${current+1}`;
   $('large-photo').src=imageURL(photo,'w2400');
-  $('photo-name').textContent=photo.name;
   $('position').textContent=`${current+1} / ${photos.length}`;
   $('previous').disabled=current===0;
   $('next').disabled=current===photos.length-1;
