@@ -2,6 +2,10 @@
 
 Static photography gallery for GitHub Pages. The homepage shows album cover cards. Clicking an album either opens it immediately or prompts for its password. Gwazy is the primary name; Gabriela Ferreira appears in the footer.
 
+## Default for new albums
+
+New galleries are public and view-only unless the owner explicitly requests different settings. Set `passwordRequired: false` and `downloads: false`; do not add `downloadPasswordSource` by default. Keep context-menu and image dragging disabled. Existing explicit exceptions, such as password-unlocked downloads for Eiras 2025, remain in place.
+
 ## Album settings
 
 `albums/index.json` lists the visible albums: title, location, year, photo count, Drive cover ID, source JSON path, `passwordRequired`, and `downloads`.
