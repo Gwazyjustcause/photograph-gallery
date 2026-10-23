@@ -9,5 +9,16 @@
     "passwordRequired": true,
     "downloads": true,
     "source": "albums/eiras-2025.json"
+  },
+  {
+    "slug": "coimbra-2023",
+    "title": "Coimbra 2023",
+    "location": "Coimbra",
+    "year": "2023",
+    "count": 5,
+    "cover": "1gdS_6KotvVe4-y0iRl9qPPJO82f_Xon1",
+    "passwordRequired": false,
+    "downloads": false,
+    "source": "albums/coimbra-2023.json"
   }
 ]
