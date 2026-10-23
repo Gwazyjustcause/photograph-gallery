@@ -1,10 +1,20 @@
-# Fotografia · Gabriela Ferreira
+# Gwazy · Fotografia
 
-Static photography gallery for GitHub Pages. PT-PT, responsive photo grid, keyboard and touch lightbox, per-photo downloads, and album access using a password-derived key.
+Static photography gallery for GitHub Pages. The homepage shows album cover cards. Clicking an album either opens it immediately or prompts for its password. Gwazy is the primary name; Gabriela Ferreira appears in the footer.
+
+## Album settings
+
+`albums/index.json` lists the visible albums: title, location, year, photo count, Drive cover ID, source JSON path, `passwordRequired`, and `downloads`.
+
+- `passwordRequired: true`: the source is an encrypted manifest, decrypted after clicking the card and entering its password.
+- `passwordRequired: false`: the source is plain JSON in the shape `{ "photos": [{ "id": "DRIVE_FILE_ID", "name": "photo.jpg" }] }` and opens without a prompt.
+- `downloads: true`: shows the download button. Any other value hides downloads and prevents the download handler from requesting originals. For view-only albums, context-menu and image dragging are discouraged; screenshots and technical saving remain possible.
+
+These settings are independent. Eiras 2025 remains password-protected with downloads enabled. No additional public album has been populated yet.
 
 ## Album access
 
-The photo list is encrypted with AES-256-GCM and a PBKDF2-SHA256 key (250,000 iterations and a random salt). No plaintext password, password hash, or unencrypted Drive IDs are committed. The browser decrypts the list after entry; nothing is saved in localStorage or sessionStorage. Reloading or closing the album locks it again.
+The protected photo list is encrypted with AES-256-GCM and a PBKDF2-SHA256 key (250,000 iterations and a random salt). No plaintext password or password hash is committed. Album cover IDs are public so the homepage can show previews; the rest of a protected album's photo list is encrypted. The browser decrypts the list after entry; nothing is saved in localStorage or sessionStorage. Reloading or returning to the album list locks it again.
 
 This is casual access control, not private photo hosting. Drive files are shared with anyone who has their links. An unlocked visitor can copy or share them. Robots exclusions discourage indexing but do not enforce access control.
 
